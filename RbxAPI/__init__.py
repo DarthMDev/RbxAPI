@@ -1,208 +1,134 @@
 # -*- coding: utf-8 -*-
 """
 Project: RbxAPI
-File: party.py
+File: __init__.py
 Author: Diana
-Creation Date: 6/8/2014
-
-Used for my TOP SECRET PARTY CHAT PROGRAM
-IF YOU'RE VIEWING THIS YOU SHOULD NOT BE AND YOU SHOULD TELL ME NOW
+Creation Date: 10/19/2014
 
 Copyright (C) 2016  Diana Land
 Read LICENSE for more information
 """
-import json
 
-from RbxAPI import general
+# Internal
+__author__ = 'Diana'
+__version__ = '2.0'
 
-basePartyURL = 'http://www.roblox.com/chat/party.ashx'
+import logging
+import os
+import sys
+import time
+
+import requests
 
 
-def getMembers():
+# User, Authentication.
+class User_:
+    loggedIn = False
+    loggedInUser = None
+
+    def __init__(self):
+        self.LoggedIn = False
+        self.Name = None
+
+    def _SetLoggedIn(self, name):
+        self.LoggedIn = True
+        self.Name = name
+
+
+# Requests, Session. Internal.
+# noinspection PyUnreachableCode
+class SessionClass(requests.Session):
     """
-    Get Party Members.
-
-    :return:
+    Internal class that provides a wrapper around requests.session()
     """
-    s = general.getSession()
-    r = s.get(basePartyURL + '?reqtype=get')
-    text = general.Convert(r.text)
-    try:
-        users = []
-        for user in text['Members']:
-            users.append(user['UserName'])
-        return users
-    except KeyError:
-        pass
+
+    def __init__(self):
+        """
+        Sets up session and headers.
+        Initial setup.
+        """
+        super().__init__()
+        self.headers.update({"User-Agent": "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:29.0) Gecko/20100101 Firefox/29.0"})
+
+    def get(self, url, **kwargs):
+        """
+        Overrides requests.Session.get and provides retry on connection fail.
+
+        :param url: Url to access
+        :type url: str
+        :param kwargs: Extra args
+        """
+        self.checkLoggedIn()
+        while True:
+            try:
+                return super(SessionClass, self).get(url, **kwargs)
+            except (TimeoutError, requests.Timeout):
+                print("Warning: Connection Timed Out. Waiting and Retrying...")
+                time.sleep(5)
+                continue
+            except (ConnectionError, requests.ConnectionError):
+                print("Warning: Connection error. Retrying...")
+                time.sleep(5)
+                continue
+            break
+
+    def post(self, url, data=None, json=None, **kwargs):
+        """
+        Overrides requests.Session.post and provides retry on connection fail.
+
+        :param url: URL to access
+        :type url: str
+        :param data: Data to send in reuqest
+        :type data: dict | bytes | filelike-object
+        :param json: Json to send in body of request
+        :type json: dict
+        :param kwargs: Extra args
+        """
+        self.checkLoggedIn()
+        while True:
+            try:
+                return super(SessionClass, self).post(url, data=data, json=json, **kwargs)
+            except (TimeoutError, requests.Timeout):
+                print("Warning: Connection Timed Out. Waiting and Retrying...")
+                time.sleep(5)
+                continue
+            except (ConnectionError, requests.ConnectionError):
+                print("Warning: Connection error. Retrying...")
+                time.sleep(5)
+                continue
+            break
+
+    def checkLoggedIn(self):
+        if not User.loggedIn:
+            return
+        if '.ROBLOSECURITY' in self.cookies and self.cookies['.ROBLOSECURITY'] != '':
+            return
+        else:
+            LoadAccounts(User.Name)
 
 
-def getGUID():
-    """
-    Get Party GUID
+Session = SessionClass()
+User = User_()
+DebugLog = logging.getLogger("Debug")
+DebugLog.setLevel(logging.DEBUG)
+DebugHandler = logging.FileHandler("Debug.log")
+DebugHandler.setLevel(logging.DEBUG)
+DebugLog.addHandler(DebugHandler)
 
-    :return:
-    """
-    s = general.getSession()
-    r = s.get(basePartyURL + '?reqtype=get')
-    try:
-        text = general.Convert(r.text)
-    except Exception:
-        print(text['Error'])
-        raise
-    try:
-        return text['PartyGuid']
-    except KeyError:
-        pass
+APILog = logging.getLogger("API")
 
+# URLs. Constants.
+TC_URL = "http://www.roblox.com/My/Money.aspx"
+CURRENCY_URL = "http://api.roblox.com/currency/balance"
+CHECK_URL = "http://www.roblox.com/home"
+LOGIN_URL = "https://www.roblox.com/newlogin"
+ESTIMATE_URL = "http://www.roblox.com/Marketplace/EconomyServices.asmx?WSDL"
 
-def invite(User):
-    """
-    Invite user User to the party
+# Requests CA. Required for freezing. Internal.
+if getattr(sys, 'frozen', False):
+    os.environ["REQUESTS_CA_BUNDLE"] = os.path.abspath(
+        os.path.join(os.path.abspath(sys.argv[0]), os.pardir, "cacert.pem"))
 
-    :param User: User to invite
-    :type User: str
-    :return: Error or False
-    :rtype: str | bool
-    """
-    s = general.getSession()
-    result = s.get(basePartyURL + '?reqtype=inviteUser&userName=' + User)
-    text = general.Convert(result.text)
-    if text['Error']:
-        return text['Error']
-
-
-def createAndInvite(User):
-    """
-    Create a party and invite user User
-
-    :param User: User to invite.
-    :type User: str
-    :return: Nothing, or error.
-    :rtype: str | list | None
-    """
-    s = general.getSession()
-    result = s.get(basePartyURL + '?reqtype=createAndInvite&userName=' + User)
-    text = general.Convert(result.text)
-    if 'Error' in text:
-        return text['Error']
-
-
-def kick(User):
-    """
-    Kick a user User from the party.
-
-    :param User: User to kick.
-    :type User: str
-    :return:
-    """
-    s = general.getSession()
-    ID = s.get('http://api.roblox.com/users/get-by-username?username=' + User)
-    ID = json.loads(ID.text)['Id']
-    text = s.get(basePartyURL + '?reqtype=removeUser&userid=' + str(ID))
-    text = json.loads(text.text)
-    if 'Error' in text:
-        return text['Error']
-
-
-def message(Msg):
-    """
-    Message Msg to party
-
-    :param Msg: Message to send
-    :type Msg: str
-    :return: Error or nothing
-    :rtype: None | str
-    """
-    s = general.getSession()
-    send = 'http://www.roblox.com/chat/send.ashx?partyGuid=' + getGUID()
-    r = s.post(send, data={'message': Msg},
-               headers={'X-CSRF-TOKEN': general.GetToken(), 'X-Requested-With': 'XMLHttpRequest'})
-    text = general.Convert(r.text)
-    if 'Error' in text:
-        return text['Error']
-
-
-def getLastMessage():
-    """
-    Get last message.
-
-    :return: list of messages
-    :rtype: list[str]
-    """
-    s = general.getSession()
-    r = s.get('http://www.roblox.com/chat/get.ashx?reqType=getallchatswithdata&openChatTabs=&activechatids=&getpartysta'
-              'tus=true&timeZoneOffset=240')
-    try:
-        text = general.Convert(r.text)
-    except Exception:
-        raise
-    try:
-        # print(text['PartyStatus']['Conversation'])
-        ms = len(text['PartyStatus']['Conversation'])
-        if ms != 0:
-            return text['PartyStatus']['Conversation'][ms - 1]['SenderUserName'], \
-                   text['PartyStatus']['Conversation'][ms - 1]['Message']
-            # messages = []
-            # for item in text['PartyStatus']['Conversation']:
-            #     messages.append(item['SenderUserName'] + ": " + item["Message"])
-            # return messages
-    except KeyError:
-        pass
-
-
-def getMessages():
-    """
-    Get messages.
-
-    :return: list of messages
-    :rtype: list[str]
-    """
-    s = general.getSession()
-    r = s.get('http://www.roblox.com/chat/get.ashx?reqType=getallchatswithdata&openChatTabs=&activechatids=&getpartysta'
-              'tus=true&timeZoneOffset=240')
-    try:
-        text = general.Convert(r.text)
-    except Exception:
-        raise
-    try:
-        ms = len(text['PartyStatus']['Conversation'])
-        if ms != 0:
-            messages = []
-            for item in text['PartyStatus']['Conversation']:
-                messages.append({item['SenderUserName']: ": " + item["Message"]})
-            return messages
-    except KeyError:
-        pass
-
-
-def getLeader():
-    """
-    Get leader of Party.
-
-    :return: Party Leader Username
-    :rtype: str
-    """
-    s = general.getSession()
-    r = s.get(basePartyURL + '?reqtype=get')
-    try:
-        text = general.Convert(r.text)
-    except Exception:
-        print(text['Error'])
-        raise
-    try:
-        return text["CreatorName"]
-    except KeyError:
-        pass
-
-
-def setup():
-    """
-    Setup the program.
-
-    """
-    pass
-
-
-if __name__ == '__main__':
-    setup()
-    getMessages()
+from .inputPass import GetNum, GetPass, Pause
+from .general import GetValidation, Login, ListAccounts, LoadAccounts, WriteConfig, ReadConfig
+from .trade import GetSpread, GetCash, GetRate, IsTradeActive, GetBuxToTixEstimate, GetTixToBuxEstimate
