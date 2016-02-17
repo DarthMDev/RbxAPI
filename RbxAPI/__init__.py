@@ -19,6 +19,7 @@ import sys
 import time
 
 import requests
+import requests.exceptions
 
 
 # User, Authentication.
@@ -66,7 +67,7 @@ class SessionClass(requests.Session):
                 print("Warning: Connection Timed Out. Waiting and Retrying...")
                 time.sleep(5)
                 continue
-            except (ConnectionError, requests.ConnectionError):
+            except (ConnectionError, requests.ConnectionError, requests.exceptions.ChunkedEncodingError):
                 print("Warning: Connection error. Retrying...")
                 time.sleep(5)
                 continue
@@ -92,7 +93,7 @@ class SessionClass(requests.Session):
                 print("Warning: Connection Timed Out. Waiting and Retrying...")
                 time.sleep(5)
                 continue
-            except (ConnectionError, requests.ConnectionError):
+            except (ConnectionError, requests.ConnectionError, requests.exceptions.ChunkedEncodingError):
                 print("Warning: Connection error. Retrying...")
                 time.sleep(5)
                 continue
