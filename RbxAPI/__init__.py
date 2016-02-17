@@ -131,5 +131,5 @@ if getattr(sys, 'frozen', False):
         os.path.join(os.path.abspath(sys.argv[0]), os.pardir, "cacert.pem"))
 
 from .inputPass import GetNum, GetPass, Pause
-from .general import GetValidation, Login, ListAccounts, LoadAccounts, WriteConfig, ReadConfig
+from .general import GetValidation, Login, ListAccounts, LoadAccounts, WriteConfig, ReadConfig, ReturnDesktopPath
 from .trade import GetSpread, GetCash, GetRate, IsTradeActive, GetBuxToTixEstimate, GetTixToBuxEstimate

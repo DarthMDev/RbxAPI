@@ -14,7 +14,7 @@ import os
 import sys
 import traceback
 
-from RbxAPI import DebugLog
+from RbxAPI import DebugLog, ReturnDesktopPath
 
 
 def TracebackHandler(Traceback):
@@ -49,9 +49,11 @@ def ExcHandler(exception_type, exception, errorTraceback, debug_hook=sys.excepth
     if False:
         debug_hook(exception_type, exception, errorTraceback)
     else:
-        Text = "Error: {0}: {1}\nTraceback(Send this to Iaz3):\n{2}".format(exception_type.__name__, exception,
-                                                                           TracebackHandler(errorTraceback))
+        Text = "Error: {0}: {1}\nTraceback(Send this to Iaz3 WITH Debug.log on your desktop):\n{2}".format(
+            exception_type.__name__, exception, TracebackHandler(errorTraceback))
         DebugLog.debug("\n\n{0}\n\n".format(Text))
+        from shutil import copyfile as copy
+        copy("Debug.log", ReturnDesktopPath())
         print(Text)
 
 

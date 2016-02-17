@@ -168,6 +168,8 @@ def ReturnConfigPath(file=None):
     if not file:
         return path
 
+def ReturnDesktopPath():
+    return os.path.abspath(os.path.join(os.path.expanduser('~'), 'Desktop'))
 
 def WriteConfig(data):
     """
