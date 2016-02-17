@@ -53,8 +53,13 @@ def ExcHandler(exception_type, exception, errorTraceback, debug_hook=sys.excepth
         Text = "Error: {0}: {1}\nTraceback(Send this to Iaz3 WITH Debug.log on your desktop):\n{2}".format(
             exception_type.__name__, exception, TracebackHandler(errorTraceback))
         DebugLog.debug("\n\n{0}\n\n".format(Text))
-        from shutil import copyfile as copy
-        copy("Debug.log", ReturnDesktopPath())
+        try:
+            from shutil import copyfile as copy
+            copy("Debug.log", ReturnDesktopPath())
+        except OSError:
+            print("\nError: Couldent copy Debug.log to desktop.\n")
+            print("Debug.log will be at: {0}".format(os.path.abspath("Debug.log")))
+            pass
         print(Text)
 
 
