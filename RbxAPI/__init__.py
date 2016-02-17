@@ -130,7 +130,7 @@ class SessionClass(requests.Session):
             break
 
     def checkLoggedIn(self):
-        if not User.loggedIn:
+        if not User.LoggedIn:
             return
         if '.ROBLOSECURITY' in self.cookies and self.cookies['.ROBLOSECURITY'] != '':
             return
