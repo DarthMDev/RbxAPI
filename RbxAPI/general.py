@@ -171,40 +171,6 @@ def ReturnConfigPath(file=None):
 def ReturnDesktopPath():
     return os.path.abspath(os.path.join(os.path.expanduser('~'), 'Desktop'))
 
-def WriteConfig(data):
-    """
-    Write config file.
-
-    :param data: Data
-    :type data: dict
-    """
-    config = configparser.ConfigParser()
-    config[User.loggedInUser] = data
-    with open(ReturnConfigPath('config.ini'), 'w') as configfile:
-        config.write(configfile)
-        configfile.close()
-
-
-def ReadConfig(username, key):
-    """
-    Read from config file.
-
-    :param username: User's Data to access
-    :type username: str
-    :param key: Key/Value to retrieve
-    :type key: str
-    :return: Value requested, so far only int values.
-    :rtype: int
-    """
-    # TODO: Adapt to user class
-    config = configparser.ConfigParser()
-    config.read(ReturnConfigPath('config.ini'))
-    if username in config:  # Previously saved config.
-        userData = config[username]
-        return userData.get(key, 0)
-    else:  # No existing config file, currently logged in.
-        return 0
-
 
 if __name__ == '__main__':
     pass

@@ -13,6 +13,7 @@ Read LICENSE for more information
 __author__ = 'Diana'
 __version__ = '2.0'
 
+import configparser
 import logging
 import os
 import sys
@@ -24,9 +25,6 @@ import requests.exceptions
 
 # User, Authentication.
 class User_:
-    loggedIn = False
-    loggedInUser = None
-
     def __init__(self):
         self.LoggedIn = False
         self.Name = None
@@ -34,6 +32,38 @@ class User_:
     def _SetLoggedIn(self, name):
         self.LoggedIn = True
         self.Name = name
+
+    def WriteConfig(self, data):
+        """
+        Write config file.
+
+        :param data: Data
+        :type data: dict
+        """
+        from .general import ReturnConfigPath
+        config = configparser.ConfigParser()
+        config[self.Name] = data
+        with open(ReturnConfigPath('config.ini'), 'w') as configfile:
+            config.write(configfile)
+            configfile.close()
+
+    def ReadConfig(self, key):
+        """
+        Read from config file.
+
+        :param key: Key/Value to retrieve
+        :type key: str
+        :return: Value requested, so far only int values.
+        :rtype: int
+        """
+        from .general import ReturnConfigPath
+        config = configparser.ConfigParser()
+        config.read(ReturnConfigPath('config.ini'))
+        if self.Name in config:  # Previously saved config.
+            userData = config[self.Name]
+            return userData.get(key, 0)
+        else:  # No existing config file, currently logged in.
+            return None
 
 
 # Requests, Session. Internal.
@@ -131,5 +161,5 @@ if getattr(sys, 'frozen', False):
         os.path.join(os.path.abspath(sys.argv[0]), os.pardir, "cacert.pem"))
 
 from .inputPass import GetNum, GetPass, Pause
-from .general import GetValidation, Login, ListAccounts, LoadAccounts, WriteConfig, ReadConfig, ReturnDesktopPath
+from .general import GetValidation, Login, ListAccounts, LoadAccounts, ReturnDesktopPath
 from .trade import GetSpread, GetCash, GetRate, IsTradeActive, GetBuxToTixEstimate, GetTixToBuxEstimate
