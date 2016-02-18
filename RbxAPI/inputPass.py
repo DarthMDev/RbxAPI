@@ -37,7 +37,8 @@ def WinGetPass(prompt='Password: ', stream=None):
         if c == '\r' or c == '\n':
             break
         if c == '\003':
-            raise KeyboardInterrupt
+             break
+             # raise KeyboardInterrupt
         if c == '\b':
             if len(pw) > 0:
                 pw = pw[:-1]
@@ -52,9 +53,10 @@ def WinGetPass(prompt='Password: ', stream=None):
     return pw
 
 
-def unix_getpass(prompt='Password: ', stream=None):
+def unix_getpass(prompt='Password: '):
     fd = None
     tty = None
+    stream = None
     try:
         # Always try reading and writing directly on the tty first.
         fd = os.open('/dev/tty', os.O_RDWR|os.O_NOCTTY)
@@ -100,13 +102,11 @@ def unix_getpass(prompt='Password: ', stream=None):
     stream.write('\n')
     return passwd
     
-def WinGetNum(prompt='> ', choices=2, stream=None):
+def WinGetNum(prompt='> ', choices=2):
     """
     Select number choices using prompt, up to a max of choices.
 
     This isnt working correctly with large numbers but it's fine trust me. Just fix it later
-
-    :param stream: No idea.
     :param choices: How many choices
     :type choices: int
     :param prompt: What to prompt user with
@@ -142,8 +142,9 @@ def WinGetNum(prompt='> ', choices=2, stream=None):
         return None
         
     
-def unix_getnum(prompt='> ', choices=2, stream=None):
+def unix_getnum(prompt='> ', choices=2):
     fd = None
+    stream = None
     tty = None
     try:
         # Always try reading and writing directly on the tty first.
@@ -196,9 +197,9 @@ def WinPause():
     Stops the program from exiting immediatly.
     """
     import msvcrt
-    for c in "Press any key to exit.":
+    for c in "\nPress any key to exit.":
         msvcrt.putwch(c)
-    while 1:
+    while True:
         c = msvcrt.getwch()
         if c:
             break
@@ -218,7 +219,7 @@ def unix_pause():
   		
 def FallbackGetPass(prompt='Password: ', stream=None):
     """
-
+	Fallback in case the first try doesnt work for some reason.
     :param prompt: Prompt for user
     :param stream: No fucking idea
     :return:
