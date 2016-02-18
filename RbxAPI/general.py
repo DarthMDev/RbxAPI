@@ -159,8 +159,10 @@ def ReturnConfigPath(file=None):
     :return: Path
     :rtype: str
     """
-    # Windows only
-    path = os.path.abspath(os.path.join(os.getenv("APPDATA"), "Iaz3Programs", "TCBot"))
+    if sys.platform == 'win32':
+    	path = os.path.abspath(os.path.join(os.getenv("APPDATA"), "Iaz3Programs", "TCBot"))
+    else:
+    	path = os.path.abspath('./')
     if not os.path.isdir(path):
         os.makedirs(path)
     if file:
